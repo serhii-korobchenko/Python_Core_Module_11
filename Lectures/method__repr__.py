@@ -8,4 +8,5 @@ class Point:
 
 
 a = Point(1, 9)
-print(a) # Point (1, 9) --> return __repr__
+print(a)
+print(repr(a)) # Point (1, 9) --> return __repr__
