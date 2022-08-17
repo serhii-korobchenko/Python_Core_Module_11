@@ -23,28 +23,39 @@ class Point:
         if (type(y) == int) or (type(y) == float):
             self.__y = y
 
+    def __str__(self):
+        return f'Point({self.x},{self.y})'
+
+    def __repr__(self) -> str:
+        return f'Point({self.x},{self.y}), XXXXXXXX'
+        
 
 class Vector:
     def __init__(self, coordinates: Point):
         self.coordinates = coordinates
-        self.data = [self.coordinates.x, self.coordinates.y]
-        
 
     def __setitem__(self, index, value):
-        self.data[index] = value
-        
-                        
+        if index == 0:
+            self.coordinates.x = value
+        if index == 1:
+            self.coordinates.y = value
 
     def __getitem__(self, index):
-        return self.data[index]
-            
-vector = Vector(Point(1, 10))
+        if index == 0:
+            return self.coordinates.x
+        if index == 1:
+            return self.coordinates.y
 
-print(vector.coordinates.x)  # 1
-print(vector.coordinates.y)  # 10
+    def __str__(self):
+        return f'Vector({self.coordinates.x},{self.coordinates.y})' 
 
-vector[0] = 10  # Устанавливаем координату x вектора в 10
 
-print(vector[0])  # 10
-print(vector[1])  # 10     
-            
+
+
+
+point = Point(1, 10)
+vector = Vector(point)
+
+print(point)  # Point(1,10)
+print(vector)  # Vector(1,10)
+print(repr(point))
