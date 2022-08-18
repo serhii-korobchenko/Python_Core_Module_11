@@ -10,12 +10,14 @@
 #              - telephone number format: 0675223345 - 10 digits;
 #              - bot undestands commands:
 #                          - "hello" - answear: "How can I help you?"
-#                          - "add name telephone number" - save new contact
-#                          - "change name telephone number" - save new telephone number for existed contact
-#                          - "phone name" - show telephone number
+#                          - "add' name telephone number" - save new contact
+#                          - "change' name telephone number" - save new telephone number for existed contact
+#                          - "phone' name" - show telephone number
 #                          - "show all" - show all contacts (name telephone number)
-#                          - "addnum name telephone number" - add aditional tel number for certain contact
-#                          - "del name telephone number" - del tel number for certain contact
+#                          - "addnum' name telephone number" - add aditional tel number for certain contact
+#                          - "del' name telephone number" - del tel number for certain contact
+#new - V                   - "addbirth" name birthday - add date of birthday in data format
+#new -                     - "nextbirth" name - show how many days left up to next birthday
 #                          - "good bye" or "close" or "exit" - bot stops work and messege "Good bye!"
 #
 #
@@ -52,53 +54,98 @@
 #new                                                     - setter - check birthday format (28.05.1978)
 
 
+from multiprocessing.sharedctypes import Value
 import re
 from collections import UserDict
+from datetime import datetime
+
 
 class AddressBook (UserDict):
         
     def add_record(self, name, phone):
         
+        self.phone = phone
+        
         Name.value = name
-        Phone.value = phone
-        self.data[Name.value] = [(Record.phone.value)]
+        #Phone.value = phone
+        #self.data[Name.value] = [(Record.phone.value)]
+        self.data[name] = Record()
+        
 
 class Field:
     pass
 
 class Name (Field):
-    value = ''
+    
+    value = None
 
 class Phone (Field):
-    value = ''
+    
+    def __init__(self, value) -> None:
+        self.value = value
+       
+    
 
 class Birthday (Field):
-    value = ''
-    def __init__(self, birthday = None) -> None:
-        self.birthday = birthday
+    
+    def __init__(self, value = None) -> None:
+        self.__value = None
+        self.value = value
+        print("self.value", self.value)
+        
+        
+
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, new_value):
+        if re.match(r"\d{2}.\d{2}.\d{4}", new_value):
+            
+            birthday_data_list  = new_value.split('.')
+            
+            birthday_datatime = datetime(year=int(birthday_data_list[2]), month=int(birthday_data_list[1]), day=int(birthday_data_list[0])).date()
+            
+            self.__value = birthday_datatime
+      
+        else:
+            print('Birthday format does not fit! Try again!')
+    
 
 class Record:
-    name = Name()
-    phone = Phone()
-    birthday = Birthday()
+    
+    def __init__(self) -> None:
+        
+        self.name = Name()
+        self.phone = Phone(add_book.phone)
+        #self.birthday = Birthday('28.05.1978') ####
+        self.record_dict = {
+                         'Name': self.name.value,
+                         'Phone': [self.phone.value],
+                         'Birthday': None
+                         }
         
     def add_phone (self, name, phone):
-        add_book.data[name].append(phone)
+        #add_book.data[name].append(phone)
+        add_book.data[name].record_dict['Phone'].append(phone)
        
     def del_phone (self, name, phone):
-        add_book.data[name].remove(phone)
+        add_book.data[name].record_dict['Phone'].remove(phone)
 
-    def edit_phone (self, name, new_phone):
-        
-   
-        add_book.data[name].clear()
-        add_book.data[name].append(new_phone)
+    def edit_phone (self, name, new_phone):  
+        add_book.data[name].record_dict['Phone'].clear()
+        add_book.data[name].record_dict['Phone'].append(new_phone)
 
-    def days_to_birthday (self):
-        if self.birthday != None:
-            pass
+    def days_to_birthday (self, name):
+        next_year_birthday = datetime(year=datetime.now().year + 1, month=add_book.data[name].record_dict['Birthday'].month, day=add_book.data[name].record_dict['Birthday'].day)
+        difference = next_year_birthday - datetime.now()
+        print(f'{difference} left until next birthday!')
 
 class TelDoesNotMathFormatError(Exception):
+    status = 0
+
+class BirthdayDoesNotMathFormatError(Exception):
     status = 0
 
 class NameDoesNotExistError(Exception):
@@ -144,6 +191,9 @@ def input_error(func): # decorator
         elif TryAgainError.status == 1:
             print('Please, Try again!')
             TryAgainError.status = 0
+        elif BirthdayDoesNotMathFormatError.status == 1:
+            print('Please, Try again!')
+            BirthdayDoesNotMathFormatError.status = 0
 
     return inner
 
@@ -200,10 +250,10 @@ def phone_func (name):           #1&2
     try:
 
         if name in add_book.data:   ### 2
-            for key, value in add_book.data.items():  ### 2
-                if key == name:
-                    mystring = ', '.join(map(str, value))
-                    print(f'Phone number assigned for requested name is: {mystring}')
+            #for key, value in add_book.data[name].record_dict.items():  ### 2
+                #if key == name:
+            mystring = ', '.join(map(str, add_book.data[name].record_dict['Phone']))
+            print(f'Phone number assigned for requested name is: {mystring}')
         else:
             raise NameDoesNotExistError
 
@@ -220,8 +270,13 @@ def show_func ():
         print('Data Base contains next contacts:')
  
         for key, value in add_book.data.items():                   ### 2
-            mystring = ', '.join(map(str, value))
-            print(f'Name : {key} | Telephone number: {mystring}')
+            mystring = ', '.join(map(str, value.record_dict['Phone']))
+            if value.record_dict['Birthday']:
+
+                print(f"Name : {key} | Telephone numbers: {mystring} | Birthday: {value.record_dict['Birthday'].strftime('%A %d %B %Y')}")
+            else:
+                
+                print(f"Name : {key} | Telephone numbers: {mystring} ")
         
 @input_error
 def addnum_func (name, phone):   #1&2
@@ -261,6 +316,54 @@ def del_func (name, phone):   #1&2
         print("Number assigned for deletion does not exist!")
         TryAgainError.status = 1
 
+@input_error
+def birth_func (name, birthday):   #1&2
+
+    try:
+        
+        if re.match(r"\d{2}.\d{2}.\d{4}", birthday):
+            
+            #birthday_data_list  = birthday.split('.')
+            #print("birthday_data_list", birthday_data_list)
+            #birthday_datatime = datetime(year=int(birthday_data_list[2]), month=int(birthday_data_list[1]), day=int(birthday_data_list[0])).date()
+            #print("birthday_datatime", birthday_datatime)
+
+            add_book.data[name].record_dict['Birthday'] = Birthday(birthday).value
+
+
+            print ('Birthday date has been added successfully!')
+        
+        else:
+            raise BirthdayDoesNotMathFormatError
+
+    except BirthdayDoesNotMathFormatError:
+
+        print("You have to set date in next format: dd.mm.yyyy! ")
+        BirthdayDoesNotMathFormatError.status = 1
+
+    except KeyError:
+        print("This contact does not exist! First - set up appropriate contact")
+        TryAgainError.status = 1
+
+    except ValueError:
+        print("You have to set date in next format: 1-31.1-12.0000-9999!")
+        TryAgainError.status = 1
+
+@input_error
+def nextbirth_func (name):   #1&2
+
+    try:
+        
+            
+        Record().days_to_birthday(name) ###2
+
+        #print ('Telephone number has been deleted successfully!')
+          
+
+    except KeyError:
+        print("This contact does not exist! First - set up appropriate contact")
+        TryAgainError.status = 1
+
 def good_buy_func ():
     print('Good bye!')
     return 'stop'
@@ -274,15 +377,23 @@ def main():
 
     commands_dict = {'hello': hello_func, 'add': add_func, 'change': change_func,\
          'phone': phone_func, 'show': show_func, 'good': good_buy_func,\
-         'close': good_buy_func, 'exit': good_buy_func, 'addnum': addnum_func, 'del': del_func }
+         'close': good_buy_func, 'exit': good_buy_func, 'addnum': addnum_func, 'del': del_func,\
+         'addbirth': birth_func, 'nextbirth': nextbirth_func  }
     
     stop_flag = ''
       
     print ("Bot has been started!")
     while True:
         try:
+            
             print('')
-            print(add_book)
+
+            if len(add_book) == 0: # Print_to_check_addressbook
+                print(add_book)
+            else: 
+                for key, value in add_book.items():
+                    print(f'Name: {key}, Record: {value.record_dict}')
+            
             command = input("Please, put you command in Command line! (from 1 to 3 arguments): ")   
             command_id, name, phone = command_parser (command) # passing vars to another func
 

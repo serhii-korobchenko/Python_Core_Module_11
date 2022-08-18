@@ -7,11 +7,13 @@ class Point:
 
     @property
     def x(self):
+        print("property")
         return self.__x
 
     @x.setter
+    
     def x(self, x):
-
+        print("x.setter")
         if (type(x) == int) or (type(x) == float):     
              self.__x = x
         
@@ -19,11 +21,12 @@ class Point:
 
     @property
     def y(self):
+        print("property")
         return self.__y
 
     @y.setter
     def y(self, y):
-        print("y", y)
+        print("y.setter")
         if (type(y) == int) or (type(y) == float):
              self.__y = y
 
