@@ -1,0 +1,25 @@
+- bot undestands commands:
++                          - "hello" - answear: "How can I help you?"
++                         - "add name telephone number" - save new contact
++                          - "change name telephone number" - save new telephone number for existed contact
++                          - "phone name" - show telephone number
++                          - "show all" - show all contacts (name telephone number)
++                          - "addnum name telephone number" - add aditional tel number for certain contact
++                          - "del name telephone number" - del tel number for certain contact
++                          - "addbirth" name birthday - add date of birthday in data format
+#new -                     - "nextbirth" name - show how many days left up to next birthday
++                          - "good bye" or "close" or "exit" - bot stops work and messege "Good bye!"
+
+
+
+record_dict['Name'].
+add_book.data[name].record_dict
+add_book.data[name].record_dict['Phone']
+add_book.data[name].record_dict['Phone'].append(phone)
+
+
+.strftime('%A %d %B %Y')
+Tuesday 07 January 2020
+
+nextbirth
+nextbirth_func

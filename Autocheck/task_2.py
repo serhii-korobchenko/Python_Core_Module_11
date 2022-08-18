@@ -11,7 +11,7 @@ class Point:
     @x.setter
     def x(self, new_value_x):
         print('x.setter')
-        self.__x = new_value_x
+        self.__x = new_value_x + 5
 
     @ property
     def y (self):
@@ -21,7 +21,7 @@ class Point:
     @y.setter
     def y(self, new_value_y):
         print('y.setter')
-        self.__y = new_value_y
+        self.__y = new_value_y + 5
 
 point = Point (5, 10)
 print(point.x)
