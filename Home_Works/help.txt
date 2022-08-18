@@ -23,3 +23,10 @@ Tuesday 07 January 2020
 
 nextbirth
 nextbirth_func
+
+  raise TelDoesNotMathFormatError
+
+    except TelDoesNotMathFormatError:
+
+        print("Telephone number does not match format - should be 10 digits")
+        TelDoesNotMathFormatError.status = 1
