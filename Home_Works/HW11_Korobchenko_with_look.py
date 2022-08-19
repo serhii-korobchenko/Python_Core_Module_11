@@ -20,9 +20,9 @@
 #new - V                   - "addbirth" name birthday - add date of birthday in data format
 #new - V                   - "nextbirth" name - show how many days left up to next birthday
 #new - V                   - "help" - bot show commands explanations
-#                          - "save" name - save data base in file: name 
-#new - V                   - "load name" - load data base from file: name
-#new - V                   - "lookup' text" - find text in records
+#                          - "save" name - save data base in file: name (without extention) 
+#new - V                   - "load name" - load data base from file: name (without extention) 
+#new - V                   - "lookup' text" - find text in records (no difference which case of characters)
 #new - V                   - "good bye" or "close" or "exit" - bot stops work and messege "Good bye!"
 #
 #
@@ -64,6 +64,7 @@ import re
 from collections import UserDict
 from datetime import datetime
 import pickle
+from copy import copy, deepcopy
 
 
 #### GLOBALS
@@ -436,9 +437,9 @@ def help_func ():
 '- "addbirth" name birthday - add date of birthday in data format\n'
 '- "nextbirth" name - show how many days left up to next birthday\n'
 '- "help" - bot show commands explanations\n'
-'- "save" name - save data base in file: name\n'
-'- "load name" - load data base from file\n'
-'- "lookup" text" - find text in records\n'
+'- "save" name - save data base in file: name (without extention) \n'
+'- "load name" - load data base from file (without extention) \n'
+'- "lookup" text" - find text in records (no difference which case of characters)\n'
 '- "good bye" or "close" or "exit" - bot stops work and messege "Good bye!" ')
     
 def save_func (name):
@@ -478,18 +479,25 @@ def lookup_func(text):
     if len(add_book.data) == 0:
         print('Data Base is empty yet. Please add someone!')
     else:
-        
+        flag_found = 0
         for key, value in add_book.data.items():                   
             mystring = ', '.join(map(str, value.record_dict['Phone']))
-            datetimestring =  value.record_dict['Birthday'].strftime('%A %d %B %Y')
-            
-            dict_for_lookup = value.record_dict
+            datetimestring =  copy(value.record_dict['Birthday'])
+            datetimestring = datetimestring.strftime('%A %d %B %Y')
+            dict_for_lookup = deepcopy(value.record_dict)
             dict_for_lookup['Phone'] = mystring
             dict_for_lookup['Birthday'] = datetimestring
+
             for key_in, value_in in dict_for_lookup.items():
-                if  value_in.find(text) >= 0:
-                    print(f'Looked up text was found in "{key}" Record, in "{key_in}" Field. in text: "{value_in}" ')
-                
+                if  value_in.lower().find(text.lower()) >= 0:
+                    print(f'Looked up text was found in "{key}" Record, in "{key_in}" Field. in next text: "{value_in}" ')
+                    flag_found += 1
+
+        if flag_found != 0:
+            print(f'Summary: There were found {flag_found} results')
+        else:
+            print('No information was found')
+        
 
 def good_buy_func ():
     print('Good bye!')
@@ -509,7 +517,7 @@ def main():
     
     stop_flag = ''
       
-    print ("Bot has been started!")
+    print ("Bot has been started!\nFor additional information enter 'help'")
     while True:
         try:
             
