@@ -1,0 +1,5 @@
+Bot has been started!
+
+Please, put you command in Command line! (from 1 to 3 arguments): How can I help you?
+
+Please, put you command in Command line! (from 1 to 3 arguments): 
