@@ -60,6 +60,10 @@ import re
 from collections import UserDict
 from datetime import datetime
 
+#### GLOBALS
+
+x = 0
+page = 1
 
 class AddressBook (UserDict):
         
@@ -70,10 +74,13 @@ class AddressBook (UserDict):
         self.data[name] = Record()
 
     def iterator(self):
-        x=0
+        
+        global x
+        global page
+
         while x <= len (self.data):
             self.data[list(self.data)[0]]
-            print(self.data[list(self.data)[x]].record_dict['Phone']) ####
+            
             mystring = ', '.join(map(str, self.data[list(self.data)[x]].record_dict['Phone']))
             if self.data[list(self.data)[x]].record_dict['Birthday']:
 
@@ -82,11 +89,10 @@ class AddressBook (UserDict):
                 
                 print(f"Name : {self.data[list(self.data)[x]].record_dict['Name']} | Telephone numbers: {mystring} ")
             
-            
-            yield x
             x += 1
-        
-
+            page += 1
+            yield x
+                        
 class Field:
     pass
 
@@ -204,6 +210,7 @@ def command_parser (command): # command`s parser
     phone = ''
        
     parsered_list = command.split (" ")
+
     if len(parsered_list) == 1:
         command_id = parsered_list[0].lower() # make all letters small
     
@@ -308,11 +315,14 @@ def phone_func (name):           #1&2
         NameDoesNotExistError.status = 1
 
 def show_func ():
+    global x
 
     if len(add_book.data) == 0:
         print('Data Base is empty yet. Please add someone!')
     else:
         print('Data Base contains next contacts:')
+
+        x = 0
  
         for key, value in add_book.data.items():                   ### 2
             mystring = ', '.join(map(str, value.record_dict['Phone']))
@@ -327,17 +337,20 @@ def show_func ():
 def see_func (n):
 
     try:
-
+        global x
+        global page
+        if len (add_book.data) - (x+1) >= 0:
+            print(f'Page #: {page}. Left: {len (add_book.data) - (x+1)} records') ####
+        else:
+            print('Stop listing!')
         record_generator = add_book.iterator()
-        for _ in range (0, int(n)):
+        for x in range (x, x+int(n)):
             next(record_generator) 
-
+            
     except IndexError:
 
-        print(f"We do not have such kind number of records yet! Please put number up to {len(add_book.data)}")
-        TryAgainError.status = 1
-
-        
+        print(f"Sorry, no more records! Enter another command!")
+                
 @input_error
 def addnum_func (name, phone):   #1&2
 
@@ -380,9 +393,7 @@ def del_func (name, phone):   #1&2
 def birth_func (name, birthday):   #1&2
                 
     add_book.data[name].record_dict['Birthday'] = Birthday(birthday).value
-    
         
-
 @input_error
 def nextbirth_func (name):   #1&2
 

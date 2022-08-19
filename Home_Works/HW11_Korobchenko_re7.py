@@ -14,11 +14,11 @@
 #                          - "change' name telephone number" - save new telephone number for existed contact
 #                          - "phone' name" - show telephone number
 #                          - "show all" - show all contacts (name telephone number)
-#                          - "see' n" - show n records
+#new - V                   - "see' n" - show n records (you could use this command several times)
 #                          - "addnum' name telephone number" - add aditional tel number for certain contact
 #                          - "del' name telephone number" - del tel number for certain contact
 #new - V                   - "addbirth" name birthday - add date of birthday in data format
-#new -                     - "nextbirth" name - show how many days left up to next birthday
+#new - V                   - "nextbirth" name - show how many days left up to next birthday
 #                          - "good bye" or "close" or "exit" - bot stops work and messege "Good bye!"
 #
 #
@@ -40,19 +40,19 @@
 #                                - del  record
 #                                - edit record              
 #                                - find record by fields
-#new                             - iterator - return --> generator by records -N records for 1 step
+#new - V                         - iterator - return --> generator by records -N records for 1 step
 #
 #                                           Record methods: 
 #                                                 - add  field Phone
 #                                                 - del  field Phone
 #                                                 - edit field Phone
-#new -                                            - days_to_birthday
+#new - V                                          - days_to_birthday
 # 
-#new                                               Phone methods:
-#new                                                     - setter - check tel. num format (7777777777)
+#                                                  Phone methods:
+#new - V                                                 - setter - check tel. num format (7777777777)
 #
-#new                                               Birthday methods:
-#new                                                     - setter - check birthday format (28.05.1978)
+#                                                  Birthday methods:
+#new - V                                                  - setter - check birthday format (28.05.1978)
 
 
 from multiprocessing.sharedctypes import Value
@@ -60,6 +60,10 @@ import re
 from collections import UserDict
 from datetime import datetime
 
+#### GLOBALS
+
+x = 0
+page = 1
 
 class AddressBook (UserDict):
         
@@ -70,10 +74,13 @@ class AddressBook (UserDict):
         self.data[name] = Record()
 
     def iterator(self):
-        x=0
+        
+        global x
+        global page
+
         while x <= len (self.data):
             self.data[list(self.data)[0]]
-            print(self.data[list(self.data)[x]].record_dict['Phone']) ####
+            
             mystring = ', '.join(map(str, self.data[list(self.data)[x]].record_dict['Phone']))
             if self.data[list(self.data)[x]].record_dict['Birthday']:
 
@@ -82,11 +89,10 @@ class AddressBook (UserDict):
                 
                 print(f"Name : {self.data[list(self.data)[x]].record_dict['Name']} | Telephone numbers: {mystring} ")
             
-            
-            yield x
             x += 1
-        
-
+            page += 1
+            yield x
+                        
 class Field:
     pass
 
@@ -109,7 +115,7 @@ class Phone (Field):
         
         if re.match(r"^[0-9]{10,10}$", new_value):
                     
-            print ('Number format has been checked successfully!')
+            #print ('Number format has been checked successfully!')
             self.__value = new_value
 
         else:
@@ -204,6 +210,7 @@ def command_parser (command): # command`s parser
     phone = ''
        
     parsered_list = command.split (" ")
+
     if len(parsered_list) == 1:
         command_id = parsered_list[0].lower() # make all letters small
     
@@ -308,11 +315,16 @@ def phone_func (name):           #1&2
         NameDoesNotExistError.status = 1
 
 def show_func ():
+    global x
+    global page
 
     if len(add_book.data) == 0:
         print('Data Base is empty yet. Please add someone!')
     else:
         print('Data Base contains next contacts:')
+
+        x = 0
+        page = 1
  
         for key, value in add_book.data.items():                   ### 2
             mystring = ', '.join(map(str, value.record_dict['Phone']))
@@ -327,17 +339,20 @@ def show_func ():
 def see_func (n):
 
     try:
-
+        global x
+        global page
+        if len (add_book.data) - (x+1) >= 0:
+            print(f'Page #: {page}. ') ####
+        else:
+            print('Stop listing!')
         record_generator = add_book.iterator()
-        for _ in range (0, int(n)):
+        for x in range (x, x+int(n)):
             next(record_generator) 
-
+            
     except IndexError:
 
-        print(f"We do not have such kind number of records yet! Please put number up to {len(add_book.data)}")
-        TryAgainError.status = 1
-
-        
+        print(f"Sorry, no more records! Use 'show all' command!")
+                
 @input_error
 def addnum_func (name, phone):   #1&2
 
@@ -380,9 +395,7 @@ def del_func (name, phone):   #1&2
 def birth_func (name, birthday):   #1&2
                 
     add_book.data[name].record_dict['Birthday'] = Birthday(birthday).value
-    
         
-
 @input_error
 def nextbirth_func (name):   #1&2
 
@@ -395,8 +408,8 @@ def nextbirth_func (name):   #1&2
         TryAgainError.status = 1
 
     except AttributeError:
-            print("You have to add your birthday before this operation!")
-            TryAgainError.status = 1
+        print("You have to add your birthday before this operation!")
+        TryAgainError.status = 1
 
 def good_buy_func ():
     print('Good bye!')
